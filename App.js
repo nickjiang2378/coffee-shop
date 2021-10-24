@@ -7,6 +7,9 @@ import { styles } from "./AppStyles"
 import firebase from "firebase"
 import JoinRoom from "./screens/JoinRoom"
 import StudyRoom from "./screens/StudyRoom"
+import PhoneUsageBar from "./components/PhoneUsageBar";
+import RNIsDeviceRooted from 'react-native-is-device-locked';
+
 
 const firebaseConfig = require("./keys.json")
 if (firebase.apps.length == 0) {
@@ -15,8 +18,39 @@ if (firebase.apps.length == 0) {
 
 const RootStack = createNativeStackNavigator()
 
-export default function App() {
+// Check if device is rooted or jailbroken.
+async function isDeviceRooted() {
+  try {
+      const result = await RNIsDeviceRooted.isDeviceRooted();
+      console.log(result);
+  } catch (e) {
+      console.error(e);
+  }
+}
   
+// Check if device has screenslock enabled.
+async function isDeviceLocked() {
+  try {
+      const result = await RNIsDeviceRooted.isDeviceLocked();
+      console.log(result);
+  } catch (e) {
+      console.error(e);
+  }
+}
+
+export default function App() {
+  let testing = true;
+  isDeviceRooted().then(() => {console.log("success")}).catch((e) => {console.log(e)})
+
+  if (testing) {
+    return (
+
+      <PaperProvider>
+        <SafeAreaView style={{...styles.container, marginLeft: 20, justifyContent: "center"}}>
+          <PhoneUsageBar name={"John"} roomData={{"John": {"progress": 1}}}/>
+        </SafeAreaView>
+      </PaperProvider>)
+  } else {
   return (
     <PaperProvider>
       <NavigationContainer>
@@ -36,6 +70,7 @@ export default function App() {
     </PaperProvider> 
 
   );
+  }
 };
 
 

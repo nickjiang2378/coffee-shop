@@ -4,7 +4,6 @@ import { SafeAreaView, View } from "react-native"
 import { styles } from "../AppStyles"
 import firebase from "firebase"
 import "firebase/firestore"
-import { data } from "browserslist";
 
 
 export default function JoinRoom({ navigation }) {
@@ -13,26 +12,45 @@ export default function JoinRoom({ navigation }) {
 
     const CAP_MEMBERS = 15
 
-    function assignRoom(name) {
-        firebase.firestore()
-            .collection("rooms")
+    async function assignRoom(name) {
+        if (!name) {
+            console.log("Enter a name")
+            return
+        }
+        let assigned_room = null, room_data = null;
+        let connection = firebase.firestore().collection("rooms")
+        await connection
             .get()
             .then((querySnapshot) => {
-                let assigned_room = null
 
                 querySnapshot.forEach(doc => {
                     if (!assigned_room && doc.data().members.length < CAP_MEMBERS) {
                         console.log("Setting room")
                         assigned_room = doc.id
+                        room_data = doc.data()
                         return
                     }
                 })
                 console.log("Assigned Room: " + assigned_room)
-                navigation.navigate("StudyRoom", {"assignedRoom": assigned_room})
             })
             .catch((error) => {
                 console.log(error)
             })
+        console.log("Altering state now with " + assigned_room)
+        await connection.doc(assigned_room)
+                        .update({
+                            "members": firebase.firestore.FieldValue.arrayUnion(name),
+                            "progress": {...room_data.progress, [name]: 1}
+                        })
+                        .then(() => {
+                            console.log('Finished adding ' + name + ' to study room')
+                        })
+                        .catch((error) => {
+                            console.log(error)
+                        })
+        console.log("Navigating to StudyRoom")
+        navigation.navigate("StudyRoom", {"assignedRoom": assigned_room, "name": name})
+
     } 
 
     return (
@@ -46,7 +64,7 @@ export default function JoinRoom({ navigation }) {
                 />
                 <Button 
                     mode="contained"
-                    onPress={() => {console.log("Moving to username screen"); assignRoom(name)}}
+                    onPress={() => {assignRoom(name)}}
                 >
                     Join a study room
                 </Button>

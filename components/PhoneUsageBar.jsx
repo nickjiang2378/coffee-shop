@@ -3,21 +3,21 @@ import { AppState, Text, View, Button } from "react-native";
 import { ProgressBar } from 'react-native-paper';
 import { styles } from "../AppStyles" 
 
-export function PhoneUsageBar() {
+export default function PhoneUsageBar({ roomData, name }) {
     const appState = useRef(AppState.currentState);
     const [appStateVisible, setAppStateVisible] = useState(appState.current);
     const [isActive, setActive] = useState(true);
-    const [awayUsage, setAwayUsage] = useState(0)
+    const [awayUsage, setAwayUsage] = useState(1)
     const timer = useRef()
     const expected = useRef()
     const timerDrift = useRef()
     const awayDate = useRef()
-    const MAX_AWAY_TIME = 60000; // ms
+    const MAX_AWAY_TIME = 10000; // ms
 
-    let interval = 100; // ms
+    let interval = 1000; // ms
     let count = 0
     function step() {
-        console.log("Step")
+        console.log("Step1")
         timerDrift.current = Date.now() - expected.current; // the drift (positive for overshooting)
         if (timerDrift > interval) {
             // something really bad happened. Maybe the browser (tab) was inactive?
@@ -26,7 +26,7 @@ export function PhoneUsageBar() {
         }
         if (awayUsage < MAX_AWAY_TIME) {
             expected.current += interval;
-            console.log("Drift: " + (interval-timerDrift.current))
+            //console.log("Drift: " + (interval-timerDrift.current))
             setAwayUsage(awayUsage + interval)
         }
 
@@ -34,10 +34,13 @@ export function PhoneUsageBar() {
 
     useEffect(() => {
         console.log("Entering timer hook")
+        roomData[name].progress = 1 - awayUsage / MAX_AWAY_TIME
+        console.log(roomData[name])
         if (!isActive) {
-            console.log("Away usage: " + awayUsage)
+            console.log("Progress: " + (1 - awayUsage / MAX_AWAY_TIME))
             timer.current = setTimeout(step, Math.max(0, interval - timerDrift.current)); // take into account drift
         }
+        
     }, [awayUsage])
 
     function showAppState(nextAppState) {
@@ -50,6 +53,7 @@ export function PhoneUsageBar() {
         }
         else {
             setActive(false);
+            awayDate.current = new Date()
         }
 
         appState.current = nextAppState;
@@ -60,7 +64,6 @@ export function PhoneUsageBar() {
     useEffect(() => {
         console.log("Entering function")
         if (!isActive) {
-            awayDate.current = new Date()
 
             expected.current = Date.now() + interval
             console.log("Changed expected")
@@ -74,7 +77,7 @@ export function PhoneUsageBar() {
             let trueTimeAway = new Date() - awayDate.current
             console.log("Previous Date:", awayDate.current)
             console.log(trueTimeAway)
-            setAwayUsage(awayUsage + trueTimeAway)
+            //setAwayUsage(awayUsage + trueTimeAway)
         }
         return () => {clearTimeout(timer.current)}
     }, [isActive])
@@ -89,6 +92,17 @@ export function PhoneUsageBar() {
 
 
     return (
-        <ProgressBar progress={1 - awayUsage / MAX_AWAY_TIME} style={{width: 200}} />
+        <>
+            <ProgressBar progress={1 - awayUsage / MAX_AWAY_TIME} style={{width: 300}} />
+            <Button 
+                title="Toggle countdown"
+                onPress={() => {setActive(isActive ? false : true)}}
+            />
+            <Button 
+                title="Regenerate"
+                onPress={() => {setAwayUsage(0)}}
+            />
+        </>
+        
     );
 }
