@@ -44,6 +44,7 @@ export default function StudyRoom({ navigation, route }) {
                 setRoomData(roomAttributes)
             });
             return unsubscribe;
+        
         }
     }, [room, name])
 
@@ -53,13 +54,56 @@ export default function StudyRoom({ navigation, route }) {
             //console.log(Object.values(roomData).sort((a,b) => {return a.progress - b.progress}))
             setInitializing(false)
         }
-    }, [roomData])
+        console.log("Altering navigation control")
+        navigation.setOptions({
+            headerLeft: () => (<Text></Text>),
+            headerRight: () => (
+                <Button color="tomato" onPress={() => removeMember()}>Leave</Button>
+            )
+        })
+            
+    }, [room, name, roomData])
 
     function renderItem({ item }) {
 
         return (
             <Person name={item.name} progress_ratio={item.progress} />
         );
+    }
+
+    async function removeMember() {
+        // Construct object excluding name
+        //console.log(roomData)
+        //console.log(name)
+        //console.log(room)
+        let remainingMembers = Object()
+        for (let person in roomData) {
+            if (person != name) {
+                console.log(person)
+                remainingMembers[person] = roomData[person].progress
+            }
+        }
+        console.log(remainingMembers)
+        const connection = firebase.firestore().collection("rooms")
+        if (room && name) {
+            await connection.doc(room)
+                    .update({
+                        "members": firebase.firestore.FieldValue.arrayRemove(name),
+                        "progress": remainingMembers
+                    })
+                    .then(() => {
+                        console.log('Finished removing ' + name + ' from ' + room)
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    }) 
+
+            navigation.navigate("JoinRoom")
+        }
+        else {
+            console.log("Error: Room is " + room)
+            console.log("Error: Name is " + name)
+        }
     }
 
 
@@ -76,8 +120,6 @@ export default function StudyRoom({ navigation, route }) {
                         keyExtractor={(item) => item.name}
                     />
                     <Text>Personal Bar</Text>
-                    <PhoneUsageBar roomData={roomData} name={name} />
-
                 </View>
                 
                 

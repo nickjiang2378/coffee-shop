@@ -7,8 +7,8 @@ import { styles } from "./AppStyles"
 import firebase from "firebase"
 import JoinRoom from "./screens/JoinRoom"
 import StudyRoom from "./screens/StudyRoom"
-import PhoneUsageBar from "./components/PhoneUsageBar";
-import RNIsDeviceRooted from 'react-native-is-device-locked';
+//import PhoneUsageBar from "./components/PhoneUsageBar";
+//import RNIsDeviceRooted from 'react-native-is-device-locked';
 
 
 const firebaseConfig = require("./keys.json")
@@ -39,12 +39,11 @@ async function isDeviceLocked() {
 }
 
 export default function App() {
-  let testing = true;
-  isDeviceRooted().then(() => {console.log("success")}).catch((e) => {console.log(e)})
+  let testing = false;
+  //isDeviceLocked().then(() => {console.log("success")}).catch((e) => {console.log(e)})
 
   if (testing) {
     return (
-
       <PaperProvider>
         <SafeAreaView style={{...styles.container, marginLeft: 20, justifyContent: "center"}}>
           <PhoneUsageBar name={"John"} roomData={{"John": {"progress": 1}}}/>

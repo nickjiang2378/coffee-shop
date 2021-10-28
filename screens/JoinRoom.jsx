@@ -36,7 +36,6 @@ export default function JoinRoom({ navigation }) {
             .catch((error) => {
                 console.log(error)
             })
-        console.log("Altering state now with " + assigned_room)
         await connection.doc(assigned_room)
                         .update({
                             "members": firebase.firestore.FieldValue.arrayUnion(name),
