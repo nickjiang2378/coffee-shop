@@ -9,6 +9,8 @@ import JoinRoom from "./screens/JoinRoom"
 import StudyRoom from "./screens/StudyRoom"
 //import PhoneUsageBar from "./components/PhoneUsageBar";
 //import RNIsDeviceRooted from 'react-native-is-device-locked';
+import { Audio } from 'expo-av';
+import TestScreen from "./screens/TestScreen";
 
 
 const firebaseConfig = require("./keys.json")
@@ -42,13 +44,9 @@ export default function App() {
   let testing = false;
   //isDeviceLocked().then(() => {console.log("success")}).catch((e) => {console.log(e)})
 
+
   if (testing) {
-    return (
-      <PaperProvider>
-        <SafeAreaView style={{...styles.container, marginLeft: 20, justifyContent: "center"}}>
-          <PhoneUsageBar name={"John"} roomData={{"John": {"progress": 1}}}/>
-        </SafeAreaView>
-      </PaperProvider>)
+    return TestScreen();
   } else {
   return (
     <PaperProvider>

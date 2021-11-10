@@ -12,3 +12,4 @@ web-build/
 # macOS
 .DS_Store
 keys.json
+assets/audio_files/

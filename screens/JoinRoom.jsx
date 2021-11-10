@@ -19,7 +19,7 @@ export default function JoinRoom({ navigation }) {
         }
         let assigned_room = null, room_data = null;
         let connection = firebase.firestore().collection("rooms")
-        await connection
+        let val = await connection
             .get()
             .then((querySnapshot) => {
 

@@ -3,6 +3,7 @@ import { Button, TextInput } from 'react-native-paper';
 import { StatusBar, Text, SafeAreaView, View, FlatList } from "react-native"
 import Person from "../components/Person"
 import PhoneUsageBar from "../components/PhoneUsageBar";
+import AudioAdjuster from "../components/AudioAdjuster";
 import { styles } from "../AppStyles"
 import firebase from "firebase"
 import "firebase/firestore"
@@ -10,7 +11,7 @@ import "firebase/firestore"
 export default function StudyRoom({ navigation, route }) {
     const [name, setName] = useState("")
     const [room, setRoom] = useState(null)
-    const [roomData, setRoomData] = useState(Object());
+    const [roomData, setRoomData] = useState();
     const [initializing, setInitializing] = useState(true)
 
     useEffect(() => {
@@ -32,6 +33,7 @@ export default function StudyRoom({ navigation, route }) {
             .collection("rooms")
             .doc(room)
             .onSnapshot((doc) => {
+                console.log("Room Data updated")
                 let data = doc.data()
                 let roomAttributes = Object();
                 data.members.forEach((member) => {
@@ -49,20 +51,27 @@ export default function StudyRoom({ navigation, route }) {
     }, [room, name])
 
     useEffect(() => {
-        if (Object.keys(roomData).length > 0 && initializing) {
-            console.log("Room data collected below (sorted):")
+        if (roomData && name && room && Object.keys(roomData).length > 0 && initializing) {
+            //console.log("Room data collected below (sorted):")
             //console.log(Object.values(roomData).sort((a,b) => {return a.progress - b.progress}))
+            
             setInitializing(false)
         }
-        console.log("Altering navigation control")
-        navigation.setOptions({
-            headerLeft: () => (<Text></Text>),
-            headerRight: () => (
-                <Button color="tomato" onPress={() => removeMember()}>Leave</Button>
-            )
-        })
             
     }, [room, name, roomData])
+
+    useEffect(() => {
+        if (!initializing && roomData) {
+            console.log("Altering navigation control")
+            console.log(roomData)
+            navigation.setOptions({
+                headerLeft: () => (<AudioAdjuster numPresent={Object.keys(roomData).length} />),
+                headerRight: () => (
+                    <Button color="tomato" onPress={() => removeMember()}>Leave</Button>
+                )
+            })  
+        }
+    }, [initializing, roomData])
 
     function renderItem({ item }) {
 
