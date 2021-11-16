@@ -10,7 +10,7 @@ export default function AudioAdjuster({ numPresent }) {
     const [sound, setSound] = useState();
     const [volume, setVolume] = useState(0.1);
     const [intervalTick, setIntervalTick] = useState(0);
-    const intervalUpdate = 0.1 * 60000; 
+    const intervalUpdate = 0.5 * 60000; 
 
     async function createSound() {
         console.log('Loading Sound');

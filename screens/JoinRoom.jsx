@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button, TextInput } from 'react-native-paper';
-import { SafeAreaView, View } from "react-native"
+import { SafeAreaView, View, Text } from "react-native"
 import { styles } from "../AppStyles"
 import firebase from "firebase"
 import "firebase/firestore"
+import * as Notifications from 'expo-notifications';
+import { registerForPushNotificationsAsync, sendPushNotification } from "../helpers/notifications.js"
 
 
 export default function JoinRoom({ navigation }) {
     const [name, setName] = useState("")
     const [room, setRoom] = useState(null)
-
+    const [isLoading, setLoading] = useState(false);
+    const [expoPushToken, setExpoPushToken] = useState('');
     const CAP_MEMBERS = 15
 
     async function assignRoom(name) {
@@ -17,6 +20,7 @@ export default function JoinRoom({ navigation }) {
             console.log("Enter a name")
             return
         }
+        setLoading(true)
         let assigned_room = null, room_data = null;
         let connection = firebase.firestore().collection("rooms")
         let val = await connection
@@ -48,13 +52,36 @@ export default function JoinRoom({ navigation }) {
                             console.log(error)
                         })
         console.log("Navigating to StudyRoom")
-        navigation.navigate("StudyRoom", {"assignedRoom": assigned_room, "name": name})
+        setLoading(false)
+        navigation.navigate("StudyRoom", {"assignedRoom": assigned_room, "name": name, "expoPushToken": expoPushToken})
 
     } 
 
+    useEffect(() => {
+        registerForPushNotificationsAsync()
+            .then(token => setExpoPushToken(token))
+            .catch((e) => {console.log(e)});
+    
+        // This listener is fired whenever a notification is received while the app is foregrounded
+        /*notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+            setNotification(notification);
+            
+        });*/
+
+        return () => {
+            //Notifications.removeNotificationSubscription(notificationListener.current);
+        };
+      }, []);
+
     return (
         <SafeAreaView style={{...styles.container, justifyContent: "center"}}>
-            <View style={{backgroundColor: "white", padding: 20, height: "30%", justifyContent: "space-evenly", margin: 20}}>
+            <View style={{
+                    backgroundColor: "white", 
+                    padding: 20, 
+                    height: "30%", 
+                    justifyContent: "space-evenly", 
+                    margin: 20
+            }}>
                 <TextInput 
                     label="Name"
                     placeholder="One will be provided if left blank"
@@ -64,6 +91,7 @@ export default function JoinRoom({ navigation }) {
                 <Button 
                     mode="contained"
                     onPress={() => {assignRoom(name)}}
+                    loading={isLoading}
                 >
                     Join a study room
                 </Button>
@@ -72,3 +100,5 @@ export default function JoinRoom({ navigation }) {
         </SafeAreaView>
     );
 }
+
+// https://docs.expo.dev/push-notifications/overview/

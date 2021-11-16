@@ -8,7 +8,6 @@ import firebase from "firebase"
 import JoinRoom from "./screens/JoinRoom"
 import StudyRoom from "./screens/StudyRoom"
 //import PhoneUsageBar from "./components/PhoneUsageBar";
-//import RNIsDeviceRooted from 'react-native-is-device-locked';
 import { Audio } from 'expo-av';
 import TestScreen from "./screens/TestScreen";
 
@@ -20,29 +19,9 @@ if (firebase.apps.length == 0) {
 
 const RootStack = createNativeStackNavigator()
 
-// Check if device is rooted or jailbroken.
-async function isDeviceRooted() {
-  try {
-      const result = await RNIsDeviceRooted.isDeviceRooted();
-      console.log(result);
-  } catch (e) {
-      console.error(e);
-  }
-}
-  
-// Check if device has screenslock enabled.
-async function isDeviceLocked() {
-  try {
-      const result = await RNIsDeviceRooted.isDeviceLocked();
-      console.log(result);
-  } catch (e) {
-      console.error(e);
-  }
-}
 
 export default function App() {
   let testing = false;
-  //isDeviceLocked().then(() => {console.log("success")}).catch((e) => {console.log(e)})
 
 
   if (testing) {

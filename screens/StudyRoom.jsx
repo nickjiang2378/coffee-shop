@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button, TextInput } from 'react-native-paper';
-import { StatusBar, Text, SafeAreaView, View, FlatList } from "react-native"
+import { Button, TextInput, Title, Text } from 'react-native-paper';
+import { StatusBar, SafeAreaView, View, FlatList } from "react-native"
 import Person from "../components/Person"
 import PhoneUsageBar from "../components/PhoneUsageBar";
 import AudioAdjuster from "../components/AudioAdjuster";
@@ -11,15 +11,19 @@ import "firebase/firestore"
 export default function StudyRoom({ navigation, route }) {
     const [name, setName] = useState("")
     const [room, setRoom] = useState(null)
+    const [expoPushToken, setExpoPushToken] = useState();
     const [roomData, setRoomData] = useState();
     const [initializing, setInitializing] = useState(true)
 
     useEffect(() => {
         let room = route.params?.assignedRoom
         let name = route.params?.name
-        if (room && name) {
+        let token = route.params?.expoPushToken
+        console.log(room, name, token)
+        if (room && name && token) {
             setRoom(room)
             setName(name)
+            setExpoPushToken(token)
         }
     }, [])
 
@@ -63,13 +67,16 @@ export default function StudyRoom({ navigation, route }) {
     useEffect(() => {
         if (!initializing && roomData) {
             console.log("Altering navigation control")
-            console.log(roomData)
+            //console.log(roomData)
             navigation.setOptions({
                 headerLeft: () => (<AudioAdjuster numPresent={Object.keys(roomData).length} />),
                 headerRight: () => (
                     <Button color="tomato" onPress={() => removeMember()}>Leave</Button>
                 )
             })  
+        }
+        if (roomData && roomData[name] && roomData[name].progress <= 0) {
+            removeMember()
         }
     }, [initializing, roomData])
 
@@ -88,7 +95,7 @@ export default function StudyRoom({ navigation, route }) {
         let remainingMembers = Object()
         for (let person in roomData) {
             if (person != name) {
-                console.log(person)
+                //console.log(person)
                 remainingMembers[person] = roomData[person].progress
             }
         }
@@ -128,7 +135,12 @@ export default function StudyRoom({ navigation, route }) {
                         style={{height: "75%"}}
                         keyExtractor={(item) => item.name}
                     />
-                    <Text>Personal Bar</Text>
+                    <Title style={{marginTop: 20}}>Personal Bar</Title>
+                    <PhoneUsageBar  expoPushToken={expoPushToken} 
+                                    roomData={roomData} 
+                                    name={name} 
+                                    room={room} 
+                    />
                 </View>
                 
                 
